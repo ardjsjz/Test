@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Trigger Executor Menu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
   <style>
     html, body {
       margin: 0; padding: 20px;
@@ -14,9 +15,7 @@
       box-sizing: border-box;
     }
     #menu {
-      max-width: 100%;
-      width: 100%;
-      max-height: 100%;
+      max-width: 400px;
       background: #222;
       border-radius: 10px;
       box-shadow:
@@ -27,6 +26,7 @@
       flex-direction: column;
       gap: 12px;
       box-sizing: border-box;
+      margin: 0 auto;
     }
     label {
       font-weight: 600;
@@ -59,6 +59,7 @@
       transition: background 0.3s ease;
       width: 100%;
       box-sizing: border-box;
+      user-select: none;
     }
     button:hover {
       background: #3355cc;
@@ -80,34 +81,40 @@
 <body>
   <div id="menu" role="main" tabindex="0">
     <label for="triggerInput">Paste Trigger Here:</label>
-    <input id="triggerInput" type="text" placeholder="e.g. TriggerServerEvent('mc9-coretto:server:addItem', 'water', 1)" />
-    <button id="runTriggerBtn">Run Trigger</button>
-    <button id="removeMenuBtn">Remove Menu</button>
+    <input id="triggerInput" type="text" placeholder="e.g. TriggerServerEvent('mc9-coretto:server:addItem', 'water', 1)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+    <button id="runTriggerBtn" type="button">Run Trigger</button>
+    <button id="removeMenuBtn" type="button">Remove Menu</button>
   </div>
 
   <script>
+    // Elements
     const runBtn = document.getElementById('runTriggerBtn');
     const removeBtn = document.getElementById('removeMenuBtn');
     const triggerInput = document.getElementById('triggerInput');
 
+    // Send JSON message to Lua
+    function sendMessage(obj) {
+      const msg = JSON.stringify(obj);
+      console.log("Sending message to Lua:", msg);
+      window.parent.postMessage(msg, "*");
+    }
+
+    // Run trigger button handler
     runBtn.addEventListener('click', () => {
       const triggerText = triggerInput.value.trim();
-      if (triggerText.length === 0) {
+      if (!triggerText) {
         alert('Please paste a trigger command!');
         return;
       }
-      window.parent.postMessage(JSON.stringify({
-        action: 'run_trigger',
-        trigger: triggerText
-      }), '*');
+      sendMessage({ action: 'run_trigger', trigger: triggerText });
     });
 
+    // Remove menu button handler
     removeBtn.addEventListener('click', () => {
-      window.parent.postMessage(JSON.stringify({
-        action: 'remove_menu'
-      }), '*');
+      sendMessage({ action: 'remove_menu' });
     });
 
+    // Enter key runs trigger
     triggerInput.addEventListener('keydown', e => {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -115,10 +122,10 @@
       }
     });
 
-    // Focus the input on load for better UX
-    window.onload = () => {
+    // Auto focus input on load
+    window.addEventListener('load', () => {
       triggerInput.focus();
-    };
+    });
   </script>
 </body>
 </html>
