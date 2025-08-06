@@ -3,25 +3,33 @@
 <head>
   <meta charset="UTF-8" />
   <title>Cheat Menu</title>
+
+  <!-- Load Tweakpane -->
   <script type="module">
     import { Pane } from 'https://cdn.jsdelivr.net/npm/tweakpane@4.0.5/dist/tweakpane.min.js';
 
+    // Create the pane
     const pane = new Pane({ title: 'Cheat Menu' });
 
-    // Add some test controls
+    // Add functional buttons
     pane.addButton({ title: 'Godmode' }).on('click', () => {
       console.log('Godmode triggered');
-      // You can also send messages to Lua if needed
     });
 
     pane.addButton({ title: 'Teleport' }).on('click', () => {
       console.log('Teleport triggered');
     });
 
-    // Add the remove menu button
+    // Add a remove button
     pane.addButton({ title: 'Remove Menu' }).on('click', () => {
-      window.parent.postMessage({ action: 'remove_menu' }, '*');
+      console.log('Remove button clicked');
     });
+
+    // Expose function to be called from Lua
+    window.destroyPane = () => {
+      pane.dispose();
+      document.body.innerHTML = '<p style="color: white; font-size: 18px;">Menu closed.</p>';
+    };
   </script>
 
   <style>
@@ -32,6 +40,7 @@
       font-family: sans-serif;
       user-select: none;
     }
+
     body {
       display: flex;
       justify-content: flex-start;
