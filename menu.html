@@ -2,17 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Trigger Executor Menu HaHa</title>
+  <title>Trigger Executor Menu</title>
   <style>
-    body {
+    html, body {
       margin: 0; padding: 20px;
+      height: 100%;
       background: #111;
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       color: #eee;
       user-select: none;
+      box-sizing: border-box;
     }
     #menu {
-      width: 320px;
+      max-width: 100%;
+      width: 100%;
+      max-height: 100%;
       background: #222;
       border-radius: 10px;
       box-shadow:
@@ -22,6 +26,7 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
+      box-sizing: border-box;
     }
     label {
       font-weight: 600;
@@ -38,6 +43,10 @@
       background: #111;
       color: #eee;
       outline: none;
+      transition: box-shadow 0.3s ease;
+    }
+    input[type="text"]:focus {
+      box-shadow: 0 0 8px #4477ff;
     }
     button {
       padding: 12px;
@@ -48,12 +57,23 @@
       font-size: 16px;
       cursor: pointer;
       transition: background 0.3s ease;
+      width: 100%;
+      box-sizing: border-box;
     }
     button:hover {
       background: #3355cc;
     }
     button:active {
       background: #223399;
+    }
+    #removeMenuBtn {
+      background: #cc4444;
+    }
+    #removeMenuBtn:hover {
+      background: #aa3333;
+    }
+    #removeMenuBtn:active {
+      background: #881111;
     }
   </style>
 </head>
@@ -62,7 +82,7 @@
     <label for="triggerInput">Paste Trigger Here:</label>
     <input id="triggerInput" type="text" placeholder="e.g. TriggerServerEvent('mc9-coretto:server:addItem', 'water', 1)" />
     <button id="runTriggerBtn">Run Trigger</button>
-    <button id="removeMenuBtn" style="background:#cc4444;">Remove Menu</button>
+    <button id="removeMenuBtn">Remove Menu</button>
   </div>
 
   <script>
@@ -76,7 +96,6 @@
         alert('Please paste a trigger command!');
         return;
       }
-      // Send the trigger command to Lua
       window.parent.postMessage(JSON.stringify({
         action: 'run_trigger',
         trigger: triggerText
@@ -89,13 +108,17 @@
       }), '*');
     });
 
-    // Optional: press Enter to run trigger
     triggerInput.addEventListener('keydown', e => {
       if (e.key === 'Enter') {
         e.preventDefault();
         runBtn.click();
       }
     });
+
+    // Focus the input on load for better UX
+    window.onload = () => {
+      triggerInput.focus();
+    };
   </script>
 </body>
 </html>
