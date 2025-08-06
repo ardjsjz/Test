@@ -2,94 +2,68 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Trigger Executor Menu</title>
+<title>Bidirectional DUI Menu</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
-  body {
-    margin: 0; padding: 20px;
-    background: #111;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    color: #eee;
-    user-select: none;
-  }
-  #menu {
-    max-width: 400px;
-    background: #222;
-    border-radius: 10px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  label {
-    font-weight: 600;
-    font-size: 14px;
-    color: #99bbff;
-  }
-  input[type="text"] {
-    padding: 10px;
-    border-radius: 6px;
-    border: none;
-    font-size: 16px;
-    width: 100%;
-    background: #111;
-    color: #eee;
-    outline: none;
-  }
-  button {
-    padding: 12px;
-    border-radius: 6px;
-    border: none;
-    background: #4477ff;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-  }
-  button:hover {
-    background: #3355cc;
-  }
-  button:active {
-    background: #223399;
-  }
-  #removeMenuBtn {
-    background: #cc4444;
-  }
-  #removeMenuBtn:hover {
-    background: #aa3333;
-  }
-  #removeMenuBtn:active {
-    background: #881111;
-  }
+  /* same styling as before for neatness */
+  body { background:#111; color:#eee; font-family:sans-serif; padding:20px; }
+  #menu { max-width:400px; background:#222; padding:20px; border-radius:10px; }
+  input, button { width: 100%; margin-top:10px; padding:10px; border:none; border-radius:6px; font-size:16px; }
+  button { cursor:pointer; background:#4477ff; color:#fff; }
+  button:hover { background:#3355cc; }
 </style>
 </head>
 <body>
-  <div id="menu" tabindex="0">
-    <label for="triggerInput">Paste Trigger Here:</label>
-    <input id="triggerInput" type="text" placeholder="e.g. TriggerServerEvent('event', 'param')" autocomplete="off" />
-    <button id="runTriggerBtn" type="button">Run Trigger</button>
-    <button id="removeMenuBtn" type="button">Remove Menu</button>
+  <div id="menu">
+    <label for="triggerInput">Trigger command:</label>
+    <input id="triggerInput" placeholder="e.g. TriggerServerEvent('my_event', 'param')" autocomplete="off" />
+    <button id="runBtn">Run Trigger</button>
+    <button id="removeBtn" style="background:#cc4444;">Remove Menu</button>
+    <pre id="log" style="margin-top:20px; white-space: pre-wrap; max-height:150px; overflow-y:auto;"></pre>
   </div>
 
   <script>
-    window.triggerToRun = null;
-
-    const runBtn = document.getElementById('runTriggerBtn');
-    const removeBtn = document.getElementById('removeMenuBtn');
+    const runBtn = document.getElementById('runBtn');
+    const removeBtn = document.getElementById('removeBtn');
     const triggerInput = document.getElementById('triggerInput');
+    const log = document.getElementById('log');
 
-    runBtn.onclick = () => {
-      const val = triggerInput.value.trim();
-      if(val.length === 0){
-        alert('Please paste a trigger command!');
-        return;
+    // Handle messages FROM Lua
+    window.addEventListener("message", (event) => {
+      try {
+        const msg = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+        log.textContent += `[Lua→DUI] ${JSON.stringify(msg)}\n`;
+        if (msg.action === "set_trigger") {
+          triggerInput.value = msg.trigger || "";
+        }
+      } catch (e) {
+        log.textContent += `[Lua→DUI] Malformed message: ${event.data}\n`;
       }
-      window.triggerToRun = val;  // set the global var
-      triggerInput.value = "";     // clear input
-    };
+    });
 
-    removeBtn.onclick = () => {
-      window.triggerToRun = "__REMOVE_MENU__";
-    };
+    // Send message TO Lua via postMessage on Run button
+    runBtn.addEventListener('click', () => {
+      const trigger = triggerInput.value.trim();
+      if (!trigger) return alert("Please enter a trigger command!");
+      const msg = { action: "run_trigger", trigger };
+      window.parent.postMessage(JSON.stringify(msg), "*");
+      log.textContent += `[DUI→Lua] Sent run_trigger\n`;
+      triggerInput.value = "";
+    });
+
+    // Send remove menu message TO Lua
+    removeBtn.addEventListener('click', () => {
+      const msg = { action: "remove_menu" };
+      window.parent.postMessage(JSON.stringify(msg), "*");
+      log.textContent += `[DUI→Lua] Sent remove_menu\n`;
+    });
+
+    // Allow Enter key to trigger Run
+    triggerInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        runBtn.click();
+      }
+    });
   </script>
 </body>
 </html>
