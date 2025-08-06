@@ -1,68 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8" />
-<title>Bidirectional DUI Menu</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Test DUI</title>
 <style>
-  /* same styling as before for neatness */
-  body { background:#111; color:#eee; font-family:sans-serif; padding:20px; }
-  #menu { max-width:400px; background:#222; padding:20px; border-radius:10px; }
-  input, button { width: 100%; margin-top:10px; padding:10px; border:none; border-radius:6px; font-size:16px; }
-  button { cursor:pointer; background:#4477ff; color:#fff; }
-  button:hover { background:#3355cc; }
+  html, body {
+    width: 100%; height: 100%; margin: 0; padding: 20px;
+    background: #222; color: #eee;
+  }
+  input, button {
+    font-size: 18px;
+    margin-top: 10px;
+    padding: 10px;
+    width: 100%;
+  }
 </style>
 </head>
 <body>
-  <div id="menu">
-    <label for="triggerInput">Trigger command:</label>
-    <input id="triggerInput" placeholder="e.g. TriggerServerEvent('my_event', 'param')" autocomplete="off" />
-    <button id="runBtn">Run Trigger</button>
-    <button id="removeBtn" style="background:#cc4444;">Remove Menu</button>
-    <pre id="log" style="margin-top:20px; white-space: pre-wrap; max-height:150px; overflow-y:auto;"></pre>
-  </div>
+  <input id="testInput" placeholder="Type here..." />
+  <button id="testBtn">Click me</button>
 
   <script>
-    const runBtn = document.getElementById('runBtn');
-    const removeBtn = document.getElementById('removeBtn');
-    const triggerInput = document.getElementById('triggerInput');
-    const log = document.getElementById('log');
-
-    // Handle messages FROM Lua
-    window.addEventListener("message", (event) => {
-      try {
-        const msg = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
-        log.textContent += `[Lua→DUI] ${JSON.stringify(msg)}\n`;
-        if (msg.action === "set_trigger") {
-          triggerInput.value = msg.trigger || "";
-        }
-      } catch (e) {
-        log.textContent += `[Lua→DUI] Malformed message: ${event.data}\n`;
-      }
-    });
-
-    // Send message TO Lua via postMessage on Run button
-    runBtn.addEventListener('click', () => {
-      const trigger = triggerInput.value.trim();
-      if (!trigger) return alert("Please enter a trigger command!");
-      const msg = { action: "run_trigger", trigger };
-      window.parent.postMessage(JSON.stringify(msg), "*");
-      log.textContent += `[DUI→Lua] Sent run_trigger\n`;
-      triggerInput.value = "";
-    });
-
-    // Send remove menu message TO Lua
-    removeBtn.addEventListener('click', () => {
-      const msg = { action: "remove_menu" };
-      window.parent.postMessage(JSON.stringify(msg), "*");
-      log.textContent += `[DUI→Lua] Sent remove_menu\n`;
-    });
-
-    // Allow Enter key to trigger Run
-    triggerInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        runBtn.click();
-      }
+    document.getElementById("testBtn").addEventListener("click", () => {
+      alert("Button clicked! Input was: " + document.getElementById("testInput").value);
     });
   </script>
 </body>
