@@ -1,54 +1,136 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
   <meta charset="UTF-8" />
-  <title>Cheat Menu</title>
-
-  <!-- Load Tweakpane -->
-  <script type="module">
-    import { Pane } from 'https://cdn.jsdelivr.net/npm/tweakpane@4.0.5/dist/tweakpane.min.js';
-
-    // Create the pane
-    const pane = new Pane({ title: 'Cheat Menu' });
-
-    // Add functional buttons
-    pane.addButton({ title: 'Godmode' }).on('click', () => {
-      console.log('Godmode triggered');
-    });
-
-    pane.addButton({ title: 'Teleport' }).on('click', () => {
-      console.log('Teleport triggered');
-    });
-
-    // Add a remove button
-    pane.addButton({ title: 'Remove Menu' }).on('click', () => {
-      console.log('Remove button clicked');
-    });
-
-    // Expose function to be called from Lua
-    window.destroyPane = () => {
-      pane.dispose();
-      document.body.innerHTML = '<p style="color: white; font-size: 18px;">Menu closed.</p>';
-    };
-  </script>
-
+  <title>Phaze Style Cheat Menu</title>
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      background: transparent;
-      font-family: sans-serif;
+    /* Reset & base */
+    * {
+      box-sizing: border-box;
       user-select: none;
     }
-
     body {
+      margin: 0; padding: 20px;
+      background: #111;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: #ddd;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    #menu {
+      width: 280px;
+      background: linear-gradient(145deg, #222, #111);
+      border-radius: 10px;
+      box-shadow:
+        0 0 10px rgba(0,0,0,0.7),
+        inset 0 0 15px #222,
+        inset 0 -5px 20px #333;
+      padding: 20px 0;
       display: flex;
-      justify-content: flex-start;
-      align-items: flex-start;
-      padding: 20px;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .btn {
+      padding: 12px 20px;
+      margin: 0 16px;
+      border-radius: 6px;
+      background: linear-gradient(145deg, #333, #222);
+      border: 1.5px solid #444;
+      color: #eee;
+      font-size: 16px;
+      cursor: pointer;
+      transition:
+        background 0.25s,
+        color 0.25s,
+        box-shadow 0.25s;
+      outline: none;
+    }
+    .btn:hover,
+    .btn.selected {
+      background: linear-gradient(145deg, #5599ff, #3366cc);
+      border-color: #2a5dcc;
+      color: #fff;
+      box-shadow:
+        0 0 8px #4a85ff,
+        inset 0 0 8px #4a85ff;
+    }
+    .btn:active {
+      background: #224499;
+      box-shadow: inset 0 0 6px #224499;
+    }
+    h2 {
+      margin: 0 16px 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: #66aaff;
+      text-shadow: 0 0 5px #5577bb88;
+      user-select: none;
     }
   </style>
 </head>
 <body>
+  <div id="menu" role="menu" aria-label="Cheat Menu" tabindex="0">
+    <h2>Cheat Menu</h2>
+    <button class="btn" data-action="godmode">Godmode</button>
+    <button class="btn" data-action="teleport">Teleport</button>
+    <button class="btn" data-action="invisible">Invisible</button>
+    <button class="btn" data-action="noclip">NoClip</button>
+    <button class="btn" data-action="remove_menu">Remove Menu</button>
+  </div>
+
+  <script>
+    const menu = document.getElementById('menu');
+    const buttons = Array.from(menu.querySelectorAll('.btn'));
+    let selectedIndex = 0;
+
+    // Initial highlight
+    buttons[selectedIndex].classList.add('selected');
+    menu.focus();
+
+    // Update selection visually
+    function updateSelection(newIndex) {
+      buttons[selectedIndex].classList.remove('selected');
+      selectedIndex = newIndex;
+      buttons[selectedIndex].classList.add('selected');
+      buttons[selectedIndex].scrollIntoView({ block: "nearest" });
+    }
+
+    // Send action to Lua via postMessage
+    function sendAction(action) {
+      window.parent.postMessage(JSON.stringify({ action }), "*");
+      console.log('Sent action:', action);
+    }
+
+    // Keyboard navigation handler
+    menu.addEventListener('keydown', e => {
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          updateSelection((selectedIndex + 1) % buttons.length);
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          updateSelection((selectedIndex - 1 + buttons.length) % buttons.length);
+          break;
+        case 'Enter':
+          e.preventDefault();
+          const action = buttons[selectedIndex].dataset.action;
+          sendAction(action);
+          break;
+        case 'Escape':
+          e.preventDefault();
+          sendAction('remove_menu');
+          break;
+      }
+    });
+
+    // Also allow mouse click to send action & update selection
+    buttons.forEach((btn, i) => {
+      btn.addEventListener('click', () => {
+        updateSelection(i);
+        sendAction(btn.dataset.action);
+      });
+    });
+  </script>
 </body>
 </html>
