@@ -1,0 +1,50 @@
+<!-- Save this as "menu.html" and serve it via localhost or upload -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Cheat Menu</title>
+  <style>
+    body { margin: 0; background: transparent; font-family: sans-serif; }
+    #menu {
+      position: absolute;
+      top: 10%;
+      left: 10%;
+      width: 300px;
+      padding: 20px;
+      background: rgba(30,30,30,0.95);
+      color: white;
+      border-radius: 10px;
+    }
+    button {
+      width: 100%;
+      margin: 5px 0;
+      padding: 10px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div id="menu">
+    <h2>Cheat Menu</h2>
+    <button onclick="alert('Godmode enabled')">Godmode</button>
+    <button onclick="alert('Aimbot toggled')">Aimbot</button>
+  </div>
+
+  <script>
+    // Handle messages from Lua
+    window.addEventListener("message", function(event) {
+      const data = event.data;
+
+      if (data.type === "toggle") {
+        const menu = document.getElementById("menu");
+        menu.style.display = menu.style.display === "none" ? "block" : "none";
+      }
+
+      if (data.type === "customAction") {
+        alert(data.action);
+      }
+    });
+  </script>
+</body>
+</html>
