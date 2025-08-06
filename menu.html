@@ -1,135 +1,100 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Phaze Style Cheat Menu</title>
+  <title>Trigger Executor Menu</title>
   <style>
-    /* Reset & base */
-    * {
-      box-sizing: border-box;
-      user-select: none;
-    }
     body {
       margin: 0; padding: 20px;
       background: #111;
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      color: #ddd;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
+      color: #eee;
+      user-select: none;
     }
     #menu {
-      width: 280px;
-      background: linear-gradient(145deg, #222, #111);
+      width: 320px;
+      background: #222;
       border-radius: 10px;
       box-shadow:
         0 0 10px rgba(0,0,0,0.7),
-        inset 0 0 15px #222,
-        inset 0 -5px 20px #333;
-      padding: 20px 0;
+        inset 0 0 15px #333;
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 12px;
     }
-    .btn {
-      padding: 12px 20px;
-      margin: 0 16px;
+    label {
+      font-weight: 600;
+      font-size: 14px;
+      color: #99bbff;
+    }
+    input[type="text"] {
+      padding: 10px;
       border-radius: 6px;
-      background: linear-gradient(145deg, #333, #222);
-      border: 1.5px solid #444;
-      color: #eee;
+      border: none;
       font-size: 16px;
-      cursor: pointer;
-      transition:
-        background 0.25s,
-        color 0.25s,
-        box-shadow 0.25s;
+      width: 100%;
+      box-sizing: border-box;
+      background: #111;
+      color: #eee;
       outline: none;
     }
-    .btn:hover,
-    .btn.selected {
-      background: linear-gradient(145deg, #5599ff, #3366cc);
-      border-color: #2a5dcc;
-      color: #fff;
-      box-shadow:
-        0 0 8px #4a85ff,
-        inset 0 0 8px #4a85ff;
+    button {
+      padding: 12px;
+      border-radius: 6px;
+      border: none;
+      background: #4477ff;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s ease;
     }
-    .btn:active {
-      background: #224499;
-      box-shadow: inset 0 0 6px #224499;
+    button:hover {
+      background: #3355cc;
     }
-    h2 {
-      margin: 0 16px 12px;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      color: #66aaff;
-      text-shadow: 0 0 5px #5577bb88;
-      user-select: none;
+    button:active {
+      background: #223399;
     }
   </style>
 </head>
 <body>
-  <div id="menu" role="menu" aria-label="Cheat Menu" tabindex="0">
-    <h2>Cheat Menu</h2>
-    <button class="btn" data-action="godmode">Godmode</button>
-    <button class="btn" data-action="teleport">Teleport</button>
-    <button class="btn" data-action="invisible">Invisible</button>
-    <button class="btn" data-action="noclip">NoClip</button>
-    <button class="btn" data-action="remove_menu">Remove Menu</button>
+  <div id="menu" role="main" tabindex="0">
+    <label for="triggerInput">Paste Trigger Here:</label>
+    <input id="triggerInput" type="text" placeholder="e.g. TriggerServerEvent('mc9-coretto:server:addItem', 'water', 1)" />
+    <button id="runTriggerBtn">Run Trigger</button>
+    <button id="removeMenuBtn" style="background:#cc4444;">Remove Menu</button>
   </div>
 
   <script>
-    const menu = document.getElementById('menu');
-    const buttons = Array.from(menu.querySelectorAll('.btn'));
-    let selectedIndex = 0;
+    const runBtn = document.getElementById('runTriggerBtn');
+    const removeBtn = document.getElementById('removeMenuBtn');
+    const triggerInput = document.getElementById('triggerInput');
 
-    // Initial highlight
-    buttons[selectedIndex].classList.add('selected');
-    menu.focus();
-
-    // Update selection visually
-    function updateSelection(newIndex) {
-      buttons[selectedIndex].classList.remove('selected');
-      selectedIndex = newIndex;
-      buttons[selectedIndex].classList.add('selected');
-      buttons[selectedIndex].scrollIntoView({ block: "nearest" });
-    }
-
-    // Send action to Lua via postMessage
-    function sendAction(action) {
-      window.parent.postMessage(JSON.stringify({ action }), "*");
-      console.log('Sent action:', action);
-    }
-
-    // Keyboard navigation handler
-    menu.addEventListener('keydown', e => {
-      switch (e.key) {
-        case 'ArrowDown':
-          e.preventDefault();
-          updateSelection((selectedIndex + 1) % buttons.length);
-          break;
-        case 'ArrowUp':
-          e.preventDefault();
-          updateSelection((selectedIndex - 1 + buttons.length) % buttons.length);
-          break;
-        case 'Enter':
-          e.preventDefault();
-          const action = buttons[selectedIndex].dataset.action;
-          sendAction(action);
-          break;
-        case 'Escape':
-          e.preventDefault();
-          sendAction('remove_menu');
-          break;
+    runBtn.addEventListener('click', () => {
+      const triggerText = triggerInput.value.trim();
+      if (triggerText.length === 0) {
+        alert('Please paste a trigger command!');
+        return;
       }
+      // Send the trigger command to Lua
+      window.parent.postMessage(JSON.stringify({
+        action: 'run_trigger',
+        trigger: triggerText
+      }), '*');
     });
 
-    // Also allow mouse click to send action & update selection
-    buttons.forEach((btn, i) => {
-      btn.addEventListener('click', () => {
-        updateSelection(i);
-        sendAction(btn.dataset.action);
-      });
+    removeBtn.addEventListener('click', () => {
+      window.parent.postMessage(JSON.stringify({
+        action: 'remove_menu'
+      }), '*');
+    });
+
+    // Optional: press Enter to run trigger
+    triggerInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        runBtn.click();
+      }
     });
   </script>
 </body>
