@@ -1,50 +1,45 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Cheat Menu</title>
+  <script type="module">
+    import { Pane } from 'https://cdn.jsdelivr.net/npm/tweakpane@4.0.5/dist/tweakpane.min.js';
+
+    const pane = new Pane({ title: 'Cheat Menu' });
+
+    // Add some test controls
+    pane.addButton({ title: 'Godmode' }).on('click', () => {
+      console.log('Godmode triggered');
+      // You can also send messages to Lua if needed
+    });
+
+    pane.addButton({ title: 'Teleport' }).on('click', () => {
+      console.log('Teleport triggered');
+    });
+
+    // Add the remove menu button
+    pane.addButton({ title: 'Remove Menu' }).on('click', () => {
+      window.parent.postMessage({ action: 'remove_menu' }, '*');
+    });
+  </script>
+
   <style>
-    body { margin: 0; background: transparent; font-family: sans-serif; }
-    #menu {
-      position: absolute;
-      top: 10%;
-      left: 10%;
-      width: 300px;
-      padding: 20px;
-      background: rgba(30,30,30,0.95);
-      color: white;
-      border-radius: 10px;
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: sans-serif;
+      user-select: none;
     }
-    button {
-      width: 100%;
-      margin: 5px 0;
-      padding: 10px;
-      font-size: 16px;
+    body {
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-start;
+      padding: 20px;
     }
   </style>
 </head>
 <body>
-  <div id="menu">
-    <h2>Cheat Menu</h2>
-    <button onclick="alert('Godmode enabled')">Godmode</button>
-    <button onclick="alert('Aimbot toggled')">Aimbot</button>
-  </div>
-
-  <script>
-    // Handle messages from Lua
-    window.addEventListener("message", function(event) {
-      const data = event.data;
-
-      if (data.type === "toggle") {
-        const menu = document.getElementById("menu");
-        menu.style.display = menu.style.display === "none" ? "block" : "none";
-      }
-
-      if (data.type === "customAction") {
-        alert(data.action);
-      }
-    });
-  </script>
 </body>
 </html>
